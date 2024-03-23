@@ -1,3 +1,4 @@
+from asyncio import sleep
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import discord
 from discord.ext import commands
@@ -14,12 +15,24 @@ PREFIX = "d!"
 OWNER_IDS = [592619320421384232]
 COGS = [path.split("\\")[-1][:-3] for path in glob("./lib/cogs/*.py")]
 
- 
+class Ready(object):
+    def __init__(self):
+        for cog in COGS:
+            setattr(self, cog, False)
+
+    def ready_up(self, cog):
+        setattr(self, cog, True)
+        print(f"{cog} cog ready.")
+
+    def all_ready(self):
+        return all([getattr(self, cog) for cog in COGS])
+
 
 class Bot(BotBase):
     def __init__(self):
         self.PREFIX = PREFIX
         self.ready = False
+        self.cogs_ready = Ready()
         self.guild = None
         self.scheduler = AsyncIOScheduler()
 
@@ -56,11 +69,14 @@ class Bot(BotBase):
         if not self.ready:
             self.stdout = self.get_channel(1196264790490886264)
             self.scheduler.start()
-            self.ready = True
 
+            while not self.cogs_ready.all_ready():
+                await sleep(0.5)
+
+            self.ready = True
             print(f'Logged in as {bot.user} (ID: {bot.user.id})')
             print('------')
-
+                #sent a message in my server. VVV
             await self.stdout.send(f'Logged in as {bot.user} (ID: {bot.user.id})')
 
         else:

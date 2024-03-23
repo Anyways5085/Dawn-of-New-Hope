@@ -6,7 +6,9 @@ class Fun(Cog):
 
     @Cog.listener()
     async def on_ready(self):
-        pass
+        if not self.bot.read:
+            self.bot.cogs_ready.ready_up("fun")
+        
 
 def setup(bot):
     bot.add_cog(Fun(bot))
