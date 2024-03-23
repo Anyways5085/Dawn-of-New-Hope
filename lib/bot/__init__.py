@@ -12,7 +12,9 @@ import random
 
 PREFIX = "d!"
 OWNER_IDS = [592619320421384232]
-COGS = [path.split("\\")[-1][:-3] for path in glob("./lib/cog/*.py")]
+COGS = [path.split("\\")[-1][:-3] for path in glob("./lib/cogs/*.py")]
+
+ 
 
 class Bot(BotBase):
     def __init__(self):
@@ -28,18 +30,11 @@ class Bot(BotBase):
             intents = Intents.all()
         )
 
-    def setup(self):
-        for cog in COGS:
-            self.load_extension(f"lib.cogs.{cog}")
-            print(f"{cog} cog loaded")
-
-        print("setup complete")
-
     def run(self, version):
         self.VERSION = version
 
-        self.setup()
-        print("running setup...")
+        print("running setup...")   
+        self.setup()     
 
         with open("lib/bot/token.0", "r", encoding="utf-8") as tf:
             self.TOKEN = tf.read()
@@ -47,19 +42,26 @@ class Bot(BotBase):
         print("running bot...")
         super().run(self.TOKEN, reconnect=True)
 
+    def setup(self):
+        for cog in COGS:
+            self.load_extension(f"lib.cogs.{cog}")
+            print(f"{cog} cog loaded")
+
+        print("setup complete")
+
     async def on_connect(self):
         print("bot connected")
 
     async def on_ready(self):
         if not self.ready:
-            self.ready = True
+            self.stdout = self.get_channel(1196264790490886264)
             self.scheduler.start()
+            self.ready = True
 
             print(f'Logged in as {bot.user} (ID: {bot.user.id})')
             print('------')
 
-            channel = self.get_channel(1196264790490886264)
-            await channel.send(f'Logged in as {bot.user} (ID: {bot.user.id})')
+            await self.stdout.send(f'Logged in as {bot.user} (ID: {bot.user.id})')
 
         else:
             print(f'Reconnected as {bot.user} (ID: {bot.user.id})')
