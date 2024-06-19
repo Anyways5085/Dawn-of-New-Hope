@@ -97,15 +97,26 @@ class Bot(BotBase):
         else:
             raise exc
 
-    async def on_error(self, err, *args, **kwargs):
-        if err == "on_command_error":
-            await args[0].send("Something went wrong.")
+async def on_command_error(self, ctx, exc):
+    if isinstance(exc, CommandNotFound):
+        return  # Ignore CommandNotFound errors
+    
+    if isinstance(exc, commands.MissingPermissions):
+        await ctx.send("You don't have the necessary permissions to execute this command.")
+        return
 
-        raise
+    if isinstance(exc, commands.BotMissingPermissions):
+        await ctx.send("I don't have the necessary permissions to execute this command.")
+        return
+
+    # Handle other exceptions
+    await ctx.send(f"An error occurred: {exc}")
+    raise exc  # Re-raise the exception for logging/debugging purposes
 
     
-    async def on_message(self,message):
-        pass
+async def on_message(self,message):
+    if not message.author.bot:
+        await self.process_commands(message)
 
 # commands
 
